@@ -4,29 +4,20 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Environment Check') {
             steps {
-                bat 'java -version'
-                bat 'mvn -version'
-                bat 'git --version'
-            }
-        }
-
-        stage('Clean') {
-            steps {
-                bat 'mvn clean'
+                bat '''
+                    echo JAVA_HOME=%JAVA_HOME%
+                    where java
+                    java -version
+                    mvn -version
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat 'mvn test -Dheadless=true'
+                bat 'mvn clean test -Dheadless=true'
             }
         }
     }
@@ -34,6 +25,11 @@ pipeline {
     post {
 
         always {
+
+            junit(
+                testResults: 'target/surefire-reports/*.xml',
+                allowEmptyResults: true
+            )
 
             archiveArtifacts(
                 artifacts: 'target/screenshots/**/*.png',
@@ -49,14 +45,6 @@ pipeline {
                 artifacts: 'target/cucumber-reports/**/*.html',
                 allowEmptyArchive: true
             )
-        }
-
-        success {
-            echo 'Selenium automation execution PASSED.'
-        }
-
-        failure {
-            echo 'Selenium automation execution FAILED.'
         }
     }
 }
