@@ -9,9 +9,11 @@ pipeline {
             choices: [
                 'ALL',
                 'TESTNG',
-                'CUCUMBER'
+                'CUCUMBER_SMOKE',
+                'CUCUMBER_REGRESSION',
+                'CUCUMBER_NEGATIVE'
             ],
-            description: 'Select which tests to execute'
+            description: 'Select the test suite to execute'
         )
 
         booleanParam(
@@ -29,12 +31,10 @@ pipeline {
 
                 bat '''
                     echo ==============================
-                    echo TEST_TYPE=%TEST_TYPE%
-                    echo HEADLESS=%HEADLESS%
-                    echo CUCUMBER_TAG=%CUCUMBER_TAG%
+                    echo TEST TYPE : %TEST_TYPE%
+                    echo HEADLESS   : %HEADLESS%
+                    echo JAVA_HOME  : %JAVA_HOME%
                     echo ==============================
-
-                    echo JAVA_HOME=%JAVA_HOME%
 
                     java -version
                     mvn -version
@@ -48,23 +48,51 @@ pipeline {
 
                 script {
 
-                    if (params.TEST_TYPE == 'TESTNG') {
+                    switch (params.TEST_TYPE) {
 
-                        bat """
-                            mvn clean test -Dheadless=${params.HEADLESS}
-                        """
+                        case 'TESTNG':
 
-                    } else if (params.TEST_TYPE == 'CUCUMBER') {
+                            bat """
+                                mvn clean test -Dheadless=${params.HEADLESS}
+                            """
 
-                        bat """
-                            mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=${params.CUCUMBER_TAG}
-                        """
+                            break
 
-                    } else {
 
-                        bat """
-                            mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=${params.CUCUMBER_TAG}
-                        """
+                        case 'CUCUMBER_SMOKE':
+
+                            bat """
+                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@smoke
+                            """
+
+                            break
+
+
+                        case 'CUCUMBER_REGRESSION':
+
+                            bat """
+                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@regression
+                            """
+
+                            break
+
+
+                        case 'CUCUMBER_NEGATIVE':
+
+                            bat """
+                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@negative
+                            """
+
+                            break
+
+
+                        case 'ALL':
+
+                            bat """
+                                mvn clean test -Dheadless=${params.HEADLESS}
+                            """
+
+                            break
                     }
                 }
             }
@@ -74,6 +102,8 @@ pipeline {
     post {
 
         always {
+
+            echo 'Publishing test results...'
 
             junit(
                 testResults: 'target/surefire-reports/*.xml',
@@ -94,6 +124,16 @@ pipeline {
                 artifacts: 'target/cucumber-reports/**/*.html',
                 allowEmptyArchive: true
             )
+        }
+
+        success {
+
+            echo 'Automation execution PASSED.'
+        }
+
+        failure {
+
+            echo 'Automation execution FAILED.'
         }
     }
 }
