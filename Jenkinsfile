@@ -150,8 +150,11 @@ pipeline {
         always {
 
             /*
-             * TestNG result
+             * ====================================================
+             * TestNG Reports
+             * ====================================================
              */
+
             script {
 
                 if (params.TEST_TYPE == 'TESTNG') {
@@ -172,7 +175,7 @@ pipeline {
                         artifacts: 'target/reports/extent-report/**/*',
                         allowEmptyArchive: true
                     )
-                    
+
                     archiveArtifacts(
                         artifacts: 'target/logs/*',
                         allowEmptyArchive: true
@@ -180,21 +183,28 @@ pipeline {
 
                 } else if (params.TEST_TYPE == 'CUCUMBER') {
 
+                    /*
+                     * ====================================================
+                     * Cucumber Reports
+                     * ====================================================
+                     */
+
                     echo "Archiving Cucumber results..."
 
-           			archiveArtifacts(
+                    archiveArtifacts(
                         artifacts: 'target/screenshots/**/*',
                         allowEmptyArchive: true
                     )
-                    
+
                     archiveArtifacts(
                         artifacts: 'target/cucumber-reports/cucumber.html',
                         allowEmptyArchive: true
                     )
-                    
-                        archiveArtifacts(
+
+                    archiveArtifacts(
                         artifacts: 'target/logs/*',
                         allowEmptyArchive: true
+                    )
                 }
             }
         }
