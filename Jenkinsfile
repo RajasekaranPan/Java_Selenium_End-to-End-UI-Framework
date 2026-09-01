@@ -169,7 +169,12 @@ pipeline {
                     )
 
                     archiveArtifacts(
-                        artifacts: 'target/extent-report/**/*',
+                        artifacts: 'target/reports/extent-report/**/*',
+                        allowEmptyArchive: true
+                    )
+                    
+                    archiveArtifacts(
+                        artifacts: 'target/logs/*',
                         allowEmptyArchive: true
                     )
 
@@ -177,10 +182,19 @@ pipeline {
 
                     echo "Archiving Cucumber results..."
 
-                    archiveArtifacts(
-                        artifacts: 'target/cucumber.html',
+           			archiveArtifacts(
+                        artifacts: 'target/screenshots/**/*',
                         allowEmptyArchive: true
                     )
+                    
+                    archiveArtifacts(
+                        artifacts: 'target/cucumber-reports/cucumber.html',
+                        allowEmptyArchive: true
+                    )
+                    
+                        archiveArtifacts(
+                        artifacts: 'target/logs/*',
+                        allowEmptyArchive: true
                 }
             }
         }
