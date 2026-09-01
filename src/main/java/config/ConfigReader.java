@@ -9,88 +9,93 @@ import java.util.Properties;
 
 public final class ConfigReader {
 
-    private static final Properties properties = new Properties();
+	private static final Properties properties = new Properties();
 
-    static {
-        loadProperties();
-    }
+	static {
+		loadProperties();
+	}
 
-    private ConfigReader() {
-    }
+	private ConfigReader() {
+	}
 
-    private static void loadProperties() {
+	private static void loadProperties() {
 
-        String environment = System.getProperty(
-                "env",
-                FrameworkConstants.DEFAULT_ENVIRONMENT
-        );
+		String environment = System.getProperty("env", FrameworkConstants.DEFAULT_ENVIRONMENT);
 
-        String filePath =
-                FrameworkConstants.CONFIG_DIRECTORY
-                        + FrameworkConstants.CONFIG_FILE_PREFIX
-                        + environment
-                        + FrameworkConstants.CONFIG_FILE_EXTENSION;
+		String filePath = FrameworkConstants.CONFIG_DIRECTORY + FrameworkConstants.CONFIG_FILE_PREFIX + environment
+				+ FrameworkConstants.CONFIG_FILE_EXTENSION;
 
-        try (InputStream inputStream = new FileInputStream(filePath)) {
+		try (InputStream inputStream = new FileInputStream(filePath)) {
 
-            properties.load(inputStream);
+			properties.load(inputStream);
 
-        } catch (IOException e) {
+		} catch (IOException e) {
 
-            throw new RuntimeException(
-                    "Unable to load configuration file: " + filePath,
-                    e
-            );
-        }
-    }
+			throw new RuntimeException("Unable to load configuration file: " + filePath, e);
+		}
+	}
 
-    public static String get(String key) {
+	public static String get(String key) {
 
-        String value = properties.getProperty(key);
+		String value = properties.getProperty(key);
 
-        if (value == null || value.isBlank()) {
+		if (value == null || value.isBlank()) {
 
-            throw new RuntimeException(
-                    "Configuration property not found: " + key
-            );
-        }
+			throw new RuntimeException("Configuration property not found: " + key);
+		}
 
-        return value.trim();
-    }
+		return value.trim();
+	}
 
-    public static String getEnvironment() {
-        return get("environment");
-    }
-    
-    public static String getBrowser() {
-        return System.getProperty("browser", get("browser"));
-    }
+	public static String getEnvironment() {
+		return get("environment");
+	}
 
-    public static boolean isHeadless() {
-        return Boolean.parseBoolean(
-                System.getProperty("headless", get("headless"))
-        );
-    }
+	public static String getBrowser() {
+		return System.getProperty("browser", get("browser"));
+	}
 
-    public static String getBaseUrl() {
-        return get("baseUrl");
-    }
+	public static boolean isHeadless() {
+		return Boolean.parseBoolean(System.getProperty("headless", get("headless")));
+	}
 
-    public static int getExplicitWait() {
-        return Integer.parseInt(get("explicitWait"));
-    }
+	public static String getBaseUrl() {
+		return get("baseUrl");
+	}
 
-    public static int getPageLoadTimeout() {
-        return Integer.parseInt(get("pageLoadTimeout"));
-    }
-    
-    public static boolean isWindowMaximize() {
-        return Boolean.parseBoolean(get("windowMaximize"));
-    }
+	public static int getExplicitWait() {
+		return Integer.parseInt(get("explicitWait"));
+	}
 
-    public static int getImplicitWait() {
-        return Integer.parseInt(get("implicitWait"));
-    }
+	public static int getPageLoadTimeout() {
+		return Integer.parseInt(get("pageLoadTimeout"));
+	}
 
+	public static boolean isWindowMaximize() {
+		return Boolean.parseBoolean(get("windowMaximize"));
+	}
+
+	public static int getImplicitWait() {
+		return Integer.parseInt(get("implicitWait"));
+	}
+
+	public static String getExecution() {
+		System.out.println("Execution Mode: " + get("execution"));
+		return System.getProperty("execution", get("execution"));
+		
+	}
+	
+	
+	public static boolean isParallel() {
+	    return Boolean.parseBoolean(
+	            System.getProperty("parallel", get("parallel"))
+	    );
+	}
+
+	public static int getThreadCount() {
+	    return Integer.parseInt(
+	            System.getProperty("threadCount", get("threadCount"))
+	    );
+	}
 
 }

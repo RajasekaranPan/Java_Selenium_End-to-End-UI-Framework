@@ -14,5 +14,5 @@ Feature: Login functionality
 
     Examples:
       | username      | password   | result  |
-      | Admin         | admin123   | success |
-      | wrongusername | wrongpass   | failure |
+      | Admin123         | admin123   | success |
+      | wrongusername | wrongpass   | success |

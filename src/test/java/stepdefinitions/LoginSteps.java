@@ -8,6 +8,8 @@ import pages.LoginPage;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import config.ConfigReader;
+
 public class LoginSteps {
 
     private LoginPage loginPage;
@@ -23,6 +25,7 @@ public class LoginSteps {
     @When("I login with valid credentials")
     public void loginWithValidCredentials() {
 
+        System.out.println("getExecution: "+ConfigReader.getExecution());
         loginPage.login(
                 "Admin",
                 "admin123"

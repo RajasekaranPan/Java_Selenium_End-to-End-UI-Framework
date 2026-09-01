@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-
+import config.ConfigReader;
 import driver.DriverManager;
 import listerners.RetryAnalyzer;
 import pages.LoginPage;
@@ -17,7 +17,7 @@ public class LoginTest extends BaseTest {
     		
         LoginPage loginPage = new LoginPage();
         
-
+        System.out.println(ConfigReader.getEnvironment());
         //DriverManager.getDriver()
         //        .get(ConfigReader.getBaseUrl());
 

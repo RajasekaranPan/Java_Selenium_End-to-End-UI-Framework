@@ -2,6 +2,16 @@ pipeline {
 
     agent any
 
+    /*
+     * Selenium Grid Configuration:
+     *
+     * Currently Selenium Grid is configured with Chrome node only.
+     * Therefore, remote execution through Jenkins supports Chrome only.
+     *
+     * Local execution can support Chrome, Firefox and Edge.
+     * Firefox/Edge Selenium Grid nodes can be added later if required.
+     */
+
     parameters {
 
         choice(
@@ -9,11 +19,27 @@ pipeline {
             choices: [
                 'ALL',
                 'TESTNG',
-                'CUCUMBER_SMOKE',
-                'CUCUMBER_REGRESSION',
-                'CUCUMBER_NEGATIVE'
+                'CUCUMBER'
             ],
-            description: 'Select the test suite to execute'
+            description: 'Select which tests to execute'
+        )
+
+        choice(
+            name: 'BROWSER',
+            choices: [
+                'chrome'
+            ],
+            description: 'Browser to execute tests. Selenium Grid currently supports Chrome only.'
+        )
+
+        choice(
+            name: 'ENVIRONMENT',
+            choices: [
+                'qa',
+                'uat',
+                'prod'
+            ],
+            description: 'Test environment'
         )
 
         booleanParam(
@@ -21,6 +47,23 @@ pipeline {
             defaultValue: true,
             description: 'Run browser in headless mode'
         )
+
+        choice(
+            name: 'CUCUMBER_TAG',
+            choices: [
+                '@smoke',
+                '@regression',
+                '@negative'
+            ],
+            description: 'Cucumber tag to execute'
+        )
+    }
+
+    environment {
+
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21.0.12'
+
+        PATH = "${JAVA_HOME}\\bin;${env.PATH}"
     }
 
     stages {
@@ -31,13 +74,22 @@ pipeline {
 
                 bat '''
                     echo ==============================
-                    echo TEST TYPE : %TEST_TYPE%
-                    echo HEADLESS   : %HEADLESS%
-                    echo JAVA_HOME  : %JAVA_HOME%
+                    echo JAVA_HOME=%JAVA_HOME%
                     echo ==============================
 
                     java -version
+
+                    echo ==============================
+                    echo Maven Version
+                    echo ==============================
+
                     mvn -version
+
+                    echo ==============================
+                    echo Selenium Grid
+                    echo http://localhost:4444
+                    echo Chrome Node Only
+                    echo ==============================
                 '''
             }
         }
@@ -48,51 +100,42 @@ pipeline {
 
                 script {
 
-                    switch (params.TEST_TYPE) {
+                    echo "Browser     : ${params.BROWSER}"
+                    echo "Environment : ${params.ENVIRONMENT}"
+                    echo "Headless    : ${params.HEADLESS}"
+                    echo "Test Type   : ${params.TEST_TYPE}"
 
-                        case 'TESTNG':
+                    if (params.TEST_TYPE == 'TESTNG') {
 
-                            bat """
-                                mvn clean test -Dheadless=${params.HEADLESS}
-                            """
+                        bat """
+                            mvn clean test ^
+                            -Dexecution=remote ^
+                            -Dbrowser=${params.BROWSER} ^
+                            -Denv=${params.ENVIRONMENT} ^
+                            -Dheadless=${params.HEADLESS} ^
+                            -Dsurefire.suiteXmlFiles=testng.xml
+                        """
 
-                            break
+                    } else if (params.TEST_TYPE == 'CUCUMBER') {
 
+                        bat """
+                            mvn clean test ^
+                            -Dexecution=remote ^
+                            -Dbrowser=${params.BROWSER} ^
+                            -Denv=${params.ENVIRONMENT} ^
+                            -Dheadless=${params.HEADLESS} ^
+                            -Dcucumber.filter.tags=${params.CUCUMBER_TAG}
+                        """
 
-                        case 'CUCUMBER_SMOKE':
+                    } else {
 
-                            bat """
-                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@smoke
-                            """
-
-                            break
-
-
-                        case 'CUCUMBER_REGRESSION':
-
-                            bat """
-                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@regression
-                            """
-
-                            break
-
-
-                        case 'CUCUMBER_NEGATIVE':
-
-                            bat """
-                                mvn clean test -Dheadless=${params.HEADLESS} -Dcucumber.filter.tags=@negative
-                            """
-
-                            break
-
-
-                        case 'ALL':
-
-                            bat """
-                                mvn clean test -Dheadless=${params.HEADLESS}
-                            """
-
-                            break
+                        bat """
+                            mvn clean test ^
+                            -Dexecution=remote ^
+                            -Dbrowser=${params.BROWSER} ^
+                            -Denv=${params.ENVIRONMENT} ^
+                            -Dheadless=${params.HEADLESS}
+                        """
                     }
                 }
             }
@@ -103,25 +146,18 @@ pipeline {
 
         always {
 
-            echo 'Publishing test results...'
-
             junit(
-                testResults: 'target/surefire-reports/*.xml',
-                allowEmptyResults: true
+                allowEmptyResults: true,
+                testResults: 'target/surefire-reports/*.xml'
             )
 
             archiveArtifacts(
-                artifacts: 'target/screenshots/**/*.png',
+                artifacts: 'target/screenshots/**/*',
                 allowEmptyArchive: true
             )
 
             archiveArtifacts(
-                artifacts: 'target/reports/**/*.html',
-                allowEmptyArchive: true
-            )
-
-            archiveArtifacts(
-                artifacts: 'target/cucumber-reports/**/*.html',
+                artifacts: 'target/extent-report/**/*',
                 allowEmptyArchive: true
             )
         }
