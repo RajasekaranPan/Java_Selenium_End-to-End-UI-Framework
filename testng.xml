@@ -7,8 +7,7 @@
 <!--  <class name="tests.ConfigReaderTest"/>
       <class name="tests.DriverInitializationInEveryTestBeforeBaseTest"/>
       <class name="tests.BrowserLaunchTest"/> -->
-     <!--  <class name="tests.LoginTest"/> -->
-      <class name="runners.CucumberTestRunner"/>
+    <class name="tests.LoginTest"/>
     </classes>
   </test> <!-- Test -->
 </suite> <!-- Suite -->

@@ -18,6 +18,7 @@ public class LoginTest extends BaseTest {
         LoginPage loginPage = new LoginPage();
         
         System.out.println(ConfigReader.getEnvironment());
+        System.out.println(ConfigReader.getExecution());
         //DriverManager.getDriver()
         //        .get(ConfigReader.getBaseUrl());
 

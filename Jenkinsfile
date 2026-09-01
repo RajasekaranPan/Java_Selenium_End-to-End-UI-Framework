@@ -3,13 +3,18 @@ pipeline {
     agent any
 
     /*
-     * Selenium Grid Configuration:
+     * ============================================================
+     * Selenium Grid Configuration
+     * ============================================================
      *
-     * Currently Selenium Grid is configured with Chrome node only.
-     * Therefore, remote execution through Jenkins supports Chrome only.
+     * Selenium Grid currently contains Chrome node only.
+     *
+     * Therefore:
+     *   Jenkins + remote execution = Chrome Selenium Grid
+     *
+     * Firefox/Edge Grid nodes can be added later.
      *
      * Local execution can support Chrome, Firefox and Edge.
-     * Firefox/Edge Selenium Grid nodes can be added later if required.
      */
 
     parameters {
@@ -17,11 +22,10 @@ pipeline {
         choice(
             name: 'TEST_TYPE',
             choices: [
-                'ALL',
                 'TESTNG',
                 'CUCUMBER'
             ],
-            description: 'Select which tests to execute'
+            description: 'Select which test framework to execute'
         )
 
         choice(
@@ -55,7 +59,7 @@ pipeline {
                 '@regression',
                 '@negative'
             ],
-            description: 'Cucumber tag to execute'
+            description: 'Cucumber tag. Used only when TEST_TYPE=Cucumber.'
         )
     }
 
@@ -100,12 +104,17 @@ pipeline {
 
                 script {
 
-                    echo "Browser     : ${params.BROWSER}"
-                    echo "Environment : ${params.ENVIRONMENT}"
-                    echo "Headless    : ${params.HEADLESS}"
-                    echo "Test Type   : ${params.TEST_TYPE}"
+                    echo "================================"
+                    echo "TEST TYPE   : ${params.TEST_TYPE}"
+                    echo "BROWSER     : ${params.BROWSER}"
+                    echo "ENVIRONMENT : ${params.ENVIRONMENT}"
+                    echo "HEADLESS    : ${params.HEADLESS}"
+                    echo "================================"
 
                     if (params.TEST_TYPE == 'TESTNG') {
+
+                        echo "Executing TestNG tests..."
+                        echo "Cucumber tag will NOT be used."
 
                         bat """
                             mvn clean test ^
@@ -118,23 +127,17 @@ pipeline {
 
                     } else if (params.TEST_TYPE == 'CUCUMBER') {
 
+                        echo "Executing Cucumber tests..."
+                        echo "Cucumber Tag: ${params.CUCUMBER_TAG}"
+
                         bat """
                             mvn clean test ^
                             -Dexecution=remote ^
                             -Dbrowser=${params.BROWSER} ^
                             -Denv=${params.ENVIRONMENT} ^
                             -Dheadless=${params.HEADLESS} ^
-                            -Dcucumber.filter.tags=${params.CUCUMBER_TAG}
-                        """
-
-                    } else {
-
-                        bat """
-                            mvn clean test ^
-                            -Dexecution=remote ^
-                            -Dbrowser=${params.BROWSER} ^
-                            -Denv=${params.ENVIRONMENT} ^
-                            -Dheadless=${params.HEADLESS}
+                            -Dsurefire.suiteXmlFiles=cucumber.xml ^
+                            -Dcucumber.filter.tags="${params.CUCUMBER_TAG}"
                         """
                     }
                 }
@@ -146,20 +149,40 @@ pipeline {
 
         always {
 
-            junit(
-                allowEmptyResults: true,
-                testResults: 'target/surefire-reports/*.xml'
-            )
+            /*
+             * TestNG result
+             */
+            script {
 
-            archiveArtifacts(
-                artifacts: 'target/screenshots/**/*',
-                allowEmptyArchive: true
-            )
+                if (params.TEST_TYPE == 'TESTNG') {
 
-            archiveArtifacts(
-                artifacts: 'target/extent-report/**/*',
-                allowEmptyArchive: true
-            )
+                    echo "Archiving TestNG results..."
+
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: 'target/surefire-reports/*.xml'
+                    )
+
+                    archiveArtifacts(
+                        artifacts: 'target/screenshots/**/*',
+                        allowEmptyArchive: true
+                    )
+
+                    archiveArtifacts(
+                        artifacts: 'target/extent-report/**/*',
+                        allowEmptyArchive: true
+                    )
+
+                } else if (params.TEST_TYPE == 'CUCUMBER') {
+
+                    echo "Archiving Cucumber results..."
+
+                    archiveArtifacts(
+                        artifacts: 'target/cucumber.html',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
         }
 
         success {
