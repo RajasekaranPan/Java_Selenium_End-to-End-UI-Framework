@@ -1,5 +1,7 @@
 package runners;
 
+import org.testng.annotations.DataProvider;
+
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
 
@@ -16,12 +18,12 @@ import io.cucumber.testng.CucumberOptions;
         monochrome = true
 )
 
-//mvn clean test -Dcucumber.filter.tags="@smoke or @regression"
+// mvn clean test -Dbrowser=chrome -Dexecution=local -Denv=qa 
+// -Dcucumber.filter.tags="@negative" -Dtest.suite.file=cucumber.xml
 public class CucumberTestRunner
         extends AbstractTestNGCucumberTests {
-
     @Override
-    @org.testng.annotations.DataProvider(
+    @DataProvider(
             parallel = true
     )
     public Object[][] scenarios() {

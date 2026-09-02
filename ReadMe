@@ -1,3 +1,9 @@
+## Run below command for running TestNG project -
+- mvn clean test -Dbrowser=chrome -Dexecution=local -Denv=qa -Dtest.suite.file=testng.xml
+
+## Run below command for running Cucumber project -
+- mvn clean test -Dbrowser=chrome -Dexecution=local -Denv=qa -Dcucumber.filter.tags="@smoke" -Dtest.suite.file=cucumber.xml
+
 ## Page Object Chaining & Fluent Interface
 
 Our Selenium automation framework follows the **Page Object Model (POM)** using **Page Object Chaining** and a **Fluent Interface** design approach.

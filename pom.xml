@@ -18,9 +18,18 @@
 		<selenium.version>4.35.0</selenium.version>
 		<testng.version>7.11.0</testng.version>
 		<cucumber.version>7.27.2</cucumber.version>
-		 <!-- Optional Cucumber tag filter -->
-    <cucumber.filter.tags></cucumber.filter.tags>
-   <surefire.suiteXmlFiles>testng.xml</surefire.suiteXmlFiles>
+   
+   <!-- Execution Defaults -->
+    <browser>chrome</browser>
+    <execution>local</execution>
+    <env>qa</env>
+
+    <!-- Cucumber -->
+    <cucumber.filter.tags>@smoke</cucumber.filter.tags>
+
+    <!-- Default Test Suite -->
+    <test.suite.file>testng.xml</test.suite.file>
+    
 	</properties>
 
 	<dependencies>
@@ -133,14 +142,9 @@
 				
 				    <!-- TestNG suite -->
 					<suiteXmlFiles>
-						<suiteXmlFile>${surefire.suiteXmlFiles}</suiteXmlFile>
+						<suiteXmlFile>${test.suite.file}</suiteXmlFile>
 					</suiteXmlFiles>
 					
-					
-        <!-- Optional Cucumber tag filtering -->
-					<systemPropertyVariables>
-						<cucumber.filter.tags>${cucumber.filter.tags}</cucumber.filter.tags>
-					</systemPropertyVariables>
 					
 					<!-- Fail if no tests were executed -->
 					     <failIfNoTests>true</failIfNoTests>

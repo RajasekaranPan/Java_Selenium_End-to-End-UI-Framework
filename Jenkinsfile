@@ -122,7 +122,7 @@ pipeline {
                             -Dbrowser=${params.BROWSER} ^
                             -Denv=${params.ENVIRONMENT} ^
                             -Dheadless=${params.HEADLESS} ^
-                            -Dsurefire.suiteXmlFiles=testng.xml
+                            -Dtest.suite.file=testng.xml
                         """
 
                     } else if (params.TEST_TYPE == 'CUCUMBER') {
@@ -136,7 +136,7 @@ pipeline {
                             -Dbrowser=${params.BROWSER} ^
                             -Denv=${params.ENVIRONMENT} ^
                             -Dheadless=${params.HEADLESS} ^
-                            -Dsurefire.suiteXmlFiles=cucumber.xml ^
+                            -Dtest.suite.file=cucumber.xml ^
                             -Dcucumber.filter.tags="${params.CUCUMBER_TAG}"
                         """
                     }
