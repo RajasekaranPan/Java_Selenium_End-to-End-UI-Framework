@@ -39,7 +39,7 @@ public final class ConfigReader {
 
 		String value = properties.getProperty(key);
 
-		if (value == null || value.isBlank()) {
+		if (value == null) {
 
 			throw new RuntimeException("Configuration property not found: " + key);
 		}
@@ -95,6 +95,48 @@ public final class ConfigReader {
 	public static int getThreadCount() {
 	    return Integer.parseInt(
 	            System.getProperty("threadCount", get("threadCount"))
+	    );
+	}
+	
+	public static String getDbUrl() {
+	    return System.getProperty("db.url", get("db.url"));
+	}
+
+	public static String getDbUsername() {
+	    return  System.getProperty("db.username", get("db.username"));
+	}
+
+	public static String getDbPassword() {
+	    return  System.getProperty("db.password", get("db.password"));
+	}
+
+	public static int getDbMaximumPoolSize() {
+	    return Integer.parseInt(
+	    		 System.getProperty("db.pool.maximum-size", get("db.pool.maximum-size"))
+	    );
+	}
+
+	public static int getDbMinimumIdle() {
+	    return Integer.parseInt(
+	    		 System.getProperty("db.pool.minimum-idle", get("db.pool.minimum-idle"))
+	    );
+	}
+
+	public static long getDbConnectionTimeout() {
+	    return Long.parseLong(
+	    		 System.getProperty("db.pool.connection-timeout", get("db.pool.connection-timeout"))
+	    );
+	}
+
+	public static long getDbIdleTimeout() {
+	    return Long.parseLong(
+	    		 System.getProperty("db.pool.idle-timeout", get("db.pool.idle-timeout"))
+	    );
+	}
+
+	public static long getDbMaxLifetime() {
+	    return Long.parseLong(
+	    		System.getProperty("db.pool.max-lifetime", get("db.pool.max-lifetime"))
 	    );
 	}
 

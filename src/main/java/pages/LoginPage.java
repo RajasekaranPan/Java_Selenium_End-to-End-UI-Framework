@@ -4,7 +4,9 @@ import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pages.abstractPages.BasePage;
 import utils.ElementActions;
+import utils.WaitUtils;
 
 public class LoginPage extends BasePage {
 
@@ -44,17 +46,21 @@ public class LoginPage extends BasePage {
         return this;
     }
 
-    public void clickLogin() {
+    public DashboardPage clickLogin() {
 
         ElementActions.click(loginButton);
+        WaitUtils.waitForPageToLoad();
+        WaitUtils.waitForUrlContains("/dashboard");
+        return new DashboardPage();
     }
 
-    public void login(
+    public DashboardPage login(
             String username,
             String password) {
 
     	logger.info("Login into application using {} ", username);
-        enterUsername(username)
+        
+    	return enterUsername(username)
                 .enterPassword(password)
                 .clickLogin();
     }

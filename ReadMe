@@ -1,0 +1,163 @@
+## Page Object Chaining & Fluent Interface
+
+Our Selenium automation framework follows the **Page Object Model (POM)** using **Page Object Chaining** and a **Fluent Interface** design approach.
+
+### Example
+
+```java
+DashboardPage dashboard = loginPage.login(username, password);
+
+BuzzPage buzzPage = dashboard.navigateToBuzzPage();
+```
+
+The Page Object method returns the **next Page Object** after a successful navigation or page transition.
+
+### Page Transition Flow
+
+```text
+LoginPage
+    │
+    │ login(username, password)
+    ▼
+DashboardPage
+    │
+    │ navigateToBuzzPage()
+    ▼
+BuzzPage
+```
+
+This allows the test to represent the actual business flow clearly:
+
+```java
+LoginPage loginPage = new LoginPage();
+
+DashboardPage dashboard = loginPage.login(username, password);
+
+BuzzPage buzzPage = dashboard.navigateToBuzzPage();
+```
+
+It can also be chained when appropriate:
+
+```java
+BuzzPage buzzPage = new LoginPage()
+        .login(username, password)
+        .navigateToBuzzPage();
+```
+
+### Design Principles
+
+| Concept                     | Implementation                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| **Page Object Model (POM)** | Each application page is represented by a dedicated Page class                    |
+| **Page Object Chaining**    | Page actions return the Page Object representing the resulting page               |
+| **Fluent Interface**        | Methods return an object that allows the next operation to be performed naturally |
+| **Encapsulation**           | Locators, synchronization and UI interaction details remain inside Page Objects   |
+| **Type-safe navigation**    | Method return types represent the expected destination page                       |
+| **Readable test flow**      | Tests describe business actions rather than Selenium implementation details       |
+
+### Page Transition Examples
+
+```java
+DashboardPage dashboard = loginPage.login(username, password);
+```
+
+`LoginPage.login()` performs the login operation, waits for the application to reach the expected state, and returns a `DashboardPage`.
+
+```java
+BuzzPage buzzPage = dashboard.navigateToBuzzPage();
+```
+
+`DashboardPage.navigateToBuzzPage()` performs the navigation, waits for the page to become ready, and returns a `BuzzPage`.
+
+Other examples:
+
+```java
+AdminPage adminPage = dashboard.navigateToAdminPage();
+
+PIMPage pimPage = dashboard.navigateToPIMPage();
+
+LeavePage leavePage = dashboard.navigateToLeavePage();
+```
+
+### Why We Use This Approach
+
+Without Page Object chaining, tests often become responsible for creating Page Objects manually:
+
+```java
+loginPage.login(username, password);
+
+DashboardPage dashboard = new DashboardPage();
+
+dashboard.clickBuzz();
+
+BuzzPage buzzPage = new BuzzPage();
+```
+
+With Page Object chaining:
+
+```java
+BuzzPage buzzPage = loginPage
+        .login(username, password)
+        .navigateToBuzzPage();
+```
+
+The second approach is preferred because the **Page Object owns the page transition** and the test focuses on the **business workflow**.
+
+### Recommended Convention
+
+When an action keeps the user on the same page, return the current Page Object:
+
+```java
+public LoginPage enterUsername(String username) {
+    ElementActions.type(usernameInput, username);
+    return this;
+}
+```
+
+When an action navigates to another page, return the destination Page Object:
+
+```java
+public DashboardPage clickLogin() {
+
+    ElementActions.click(loginButton);
+
+    WaitUtils.waitForPageToLoad();
+
+    return new DashboardPage();
+}
+```
+
+Therefore:
+
+```text
+Same page action
+      ↓
+return this
+
+Page transition
+      ↓
+return new DestinationPage()
+```
+
+This convention keeps the framework consistent, readable, maintainable and scalable as the number of Page Objects increases.
+
+
+DriverFactory
+→ Which execution environment?
+
+LocalDriverFactory
+→ Create local WebDriver
+
+RemoteDriverFactory
+→ Create Grid WebDriver
+
+BrowserOptionsFactory
+→ How should the browser be configured?
+
+DriverManager
+→ Where is the current WebDriver stored?
+
+BasePage
+→ How do Page Objects use the current WebDriver?
+
+That's clean Single Responsibility Principle + Factory design + ThreadLocal Driver Management.

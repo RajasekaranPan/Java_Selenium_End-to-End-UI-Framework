@@ -1,0 +1,262 @@
+## MariaDB / XAMPP Recovery – `mysql.db` Corruption
+
+### Issue
+
+XAMPP MariaDB was starting and immediately stopping with the following error:
+
+```text
+MySQL shutdown unexpectedly.
+```
+
+Running MariaDB directly from the command line revealed the actual root cause:
+
+```text
+[ERROR] mysqld.exe: Table '.\mysql\db' is marked as crashed
+and last (automatic?) repair failed
+
+[ERROR] Fatal error: Can't open and lock privilege tables:
+Table '.\mysql\db' is marked as crashed and last (automatic?) repair failed
+```
+
+The affected table was:
+
+```text
+C:\xampp\mysql\data\mysql\db.MAI
+```
+
+> **Important:** `mysql.db` is a MariaDB system/privilege table.
+> The OrangeHRM application database was not the corrupted table.
+
+---
+
+### Step 1 – Stop MariaDB
+
+Before performing any repair:
+
+1. Stop **MySQL** from XAMPP Control Panel.
+2. Make sure no `mysqld.exe` process is running.
+3. Do not run the repair against a running MariaDB instance.
+
+---
+
+### Step 2 – Backup the Complete MariaDB Data Directory
+
+A complete backup of the MariaDB data directory was taken before making any changes.
+
+Run from Command Prompt:
+
+```cmd
+xcopy "C:\xampp\mysql\data" "C:\xampp\mysql\data_backup" /E /H /C /I /Y
+```
+
+The backup contains:
+
+```text
+C:\xampp\mysql\data_backup
+```
+
+The command successfully copied:
+
+```text
+480 File(s) copied
+```
+
+The backup includes:
+
+* MariaDB system tables
+* OrangeHRM database
+* `ibdata1`
+* InnoDB log files
+* Aria files
+* `my.ini`
+* Other MariaDB metadata and configuration files
+
+> **Never skip this backup step before attempting database-file repair.**
+
+---
+
+### Step 3 – Repair the Corrupted `mysql.db` Table
+
+Open Command Prompt and navigate to the MariaDB binaries:
+
+```cmd
+cd C:\xampp\mysql\bin
+```
+
+Run:
+
+```cmd
+aria_chk.exe -r "C:\xampp\mysql\data\mysql\db.MAI"
+```
+
+The repair produced:
+
+```text
+aria_chk.exe: Got error 'Can't find file' when trying to use aria control file '.\aria_log_control'
+- recovering (with sort) Aria-table 'C:\xampp\mysql\data\mysql\db.MAI'
+Data records: 3
+- Fixing index 1
+Wrong CRC on datapage at 1
+- Fixing index 2
+Data records: 0
+State updated
+```
+
+The important result was:
+
+```text
+State updated
+```
+
+The `Wrong CRC on datapage` message confirmed that corruption existed in the table and that `aria_chk` performed a recovery operation.
+
+---
+
+### Step 4 – Start MariaDB from XAMPP
+
+After the repair:
+
+1. Open XAMPP Control Panel.
+2. Start **MySQL**.
+3. Verify that MySQL remains in the **Running** state.
+
+MariaDB successfully started after the repair.
+
+---
+
+### Step 5 – Verify MariaDB Connectivity
+
+From Command Prompt:
+
+```cmd
+cd C:\xampp\mysql\bin
+mysql -u root -p
+```
+
+Enter the MariaDB root password.
+
+Successful connection displayed:
+
+```text
+Welcome to the MariaDB monitor.
+Server version: 10.4.32-MariaDB
+```
+
+---
+
+### Step 6 – Verify Databases
+
+Run:
+
+```sql
+SHOW DATABASES;
+```
+
+Expected databases:
+
+```text
+information_schema
+mysql
+orangehrm
+performance_schema
+phpmyadmin
+test
+```
+
+The important application database is:
+
+```text
+orangehrm
+```
+
+---
+
+### Step 7 – Verify OrangeHRM Database
+
+Select the OrangeHRM database:
+
+```sql
+USE orangehrm;
+```
+
+Verify all tables:
+
+```sql
+SHOW TABLES;
+```
+
+The OrangeHRM database was successfully accessible and contained:
+
+```text
+171 rows in set
+```
+
+This confirmed that the OrangeHRM database and its tables were still available after repairing the MariaDB system table.
+
+---
+
+### Recovery Summary
+
+```text
+MariaDB fails to start
+        ↓
+Run mysqld.exe --console
+        ↓
+Identify corrupted mysql.db
+        ↓
+STOP MariaDB
+        ↓
+Backup C:\xampp\mysql\data
+        ↓
+aria_chk.exe -r mysql\db.MAI
+        ↓
+State updated
+        ↓
+Start MariaDB from XAMPP
+        ↓
+mysql -u root -p
+        ↓
+SHOW DATABASES
+        ↓
+USE orangehrm
+        ↓
+SHOW TABLES
+        ↓
+OrangeHRM database verified
+```
+
+### Important Safety Notes
+
+**Do not perform the following unless absolutely necessary and after taking a backup:**
+
+```text
+Do NOT delete C:\xampp\mysql\data
+Do NOT delete ibdata1
+Do NOT delete ib_logfile0 / ib_logfile1
+Do NOT replace the complete data directory
+Do NOT run aria_chk against a running MariaDB instance
+Do NOT blindly delete corrupted system tables
+```
+
+Always:
+
+1. Stop MariaDB.
+2. Take a complete backup.
+3. Identify the exact corrupted table.
+4. Repair only the affected table.
+5. Start MariaDB.
+6. Verify the application database and tables.
+
+Why HikariCP for parallel execution?
+Connection pooling — maintains a pool of reusable DB connections instead of creating a new physical connection for every test.
+Parallel-safe — each TestNG thread can borrow its own connection from the pool.
+Better performance — avoids expensive JDBC connection creation repeatedly.
+Controls concurrency — maximum-size=10 means up to 10 DB connections can be active simultaneously.
+Automatic reuse — connection.close() returns the connection to Hikari's pool; it doesn't normally close the physical DB connection.
+Prevents connection explosion — without pooling, 50 parallel tests could attempt to create 50 DB connections.
+Connection management — handles timeout, idle connections, max lifetime, and connection health.
+Scalable — works well when TestNG parallelism increases.
+
+Key point: HikariCP doesn't make JDBC itself parallel. 
+It efficiently manages multiple independent connections, making parallel DB tests practical and safe
+

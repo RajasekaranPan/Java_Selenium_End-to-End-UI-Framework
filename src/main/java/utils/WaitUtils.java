@@ -2,9 +2,8 @@ package utils;
 
 import config.ConfigReader;
 import driver.DriverManager;
-
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,58 +13,103 @@ import java.time.Duration;
 
 public final class WaitUtils {
 
-	// Synchronizations
+    private static final By LOADING_SPINNER =
+            By.cssSelector(".oxd-loading-spinner");
 
-	private WaitUtils() {
-	}
+    private WaitUtils() {
+    }
 
-	private static WebDriverWait getWait() {
+    private static WebDriverWait getWait() {
 
-		WebDriver driver = DriverManager.getDriver();
+        WebDriver driver = DriverManager.getDriver();
 
-		return new WebDriverWait(driver, Duration.ofSeconds(ConfigReader.getExplicitWait()));
-	}
+        return new WebDriverWait(
+                driver,
+                Duration.ofSeconds(ConfigReader.getExplicitWait())
+        );
+    }
 
-	// Prefer By as the parameter instead of WebElement
-	// WaitUtils.waitForVisible(driver.findElement(username));
-	// Because Selenium can repeatedly locate the element while waiting.
-	// This is especially useful for dynamic applications where the DOM changes.
-	public static WebElement waitForVisible(By locator) {
+    public static WebElement waitForVisible(By locator) {
+        return getWait().until(
+                ExpectedConditions.visibilityOfElementLocated(locator)
+        );
+    }
 
-		return getWait().until(ExpectedConditions.visibilityOfElementLocated(locator));
-	}
+    public static WebElement waitForClickable(By locator) {
+        return getWait().until(
+                ExpectedConditions.elementToBeClickable(locator)
+        );
+    }
 
-	public static WebElement waitForClickable(By locator) {
+    public static WebElement waitForPresence(By locator) {
+        return getWait().until(
+                ExpectedConditions.presenceOfElementLocated(locator)
+        );
+    }
 
-		return getWait().until(ExpectedConditions.elementToBeClickable(locator));
-	}
+    public static boolean waitForInvisible(By locator) {
+        return getWait().until(
+                ExpectedConditions.invisibilityOfElementLocated(locator)
+        );
+    }
 
-	public static WebElement waitForPresence(By locator) {
+    public static boolean waitForElementToDisappear(By locator) {
+        return waitForInvisible(locator);
+    }
 
-		return getWait().until(ExpectedConditions.presenceOfElementLocated(locator));
-	}
+    public static boolean waitForUrlContains(String urlFragment) {
+        return getWait().until(
+                ExpectedConditions.urlContains(urlFragment)
+        );
+    }
 
-	public static boolean waitForInvisible(By locator) {
+    public static boolean waitForTitleContains(String titleFragment) {
+        return getWait().until(
+                ExpectedConditions.titleContains(titleFragment)
+        );
+    }
 
-		return getWait().until(ExpectedConditions.invisibilityOfElementLocated(locator));
-	}
+    public static org.openqa.selenium.Alert waitForAlert() {
+        return getWait().until(
+                ExpectedConditions.alertIsPresent()
+        );
+    }
 
-	public static boolean waitForElementToDisappear(By locator) {
+    /**
+     * Wait until browser document loading is completed.
+     */
+    public static void waitForDocumentReady() {
 
-		return waitForInvisible(locator);
-	}
+        getWait().until(driver ->
+                "complete".equals(
+                        ((JavascriptExecutor) driver)
+                                .executeScript("return document.readyState")
+                )
+        );
+    }
 
-	public static boolean waitForUrlContains(String urlFragment) {
+    /**
+     * Wait until application loading spinner disappears.
+     */
+    public static void waitForLoadingSpinnerToDisappear() {
 
-		return getWait().until(ExpectedConditions.urlContains(urlFragment));
-	}
+        getWait().until(
+                ExpectedConditions.invisibilityOfElementLocated(
+                        LOADING_SPINNER
+                )
+        );
+    }
 
-	public static boolean waitForTitleContains(String titleFragment) {
+    /**
+     * Wait until the page/application has reached a stable state.
+     *
+     * Includes:
+     * 1. Browser document completely loaded
+     * 2. Application loading spinner disappeared
+     */
+    public static void waitForPageToLoad() {
 
-		return getWait().until(ExpectedConditions.titleContains(titleFragment));
-	}
-
-	public static Alert waitForAlert() {
-		return getWait().until(ExpectedConditions.alertIsPresent());
-	}
+        waitForDocumentReady();
+        waitForLoadingSpinnerToDisappear();
+    }
 }

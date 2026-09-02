@@ -18,6 +18,9 @@
 		<selenium.version>4.35.0</selenium.version>
 		<testng.version>7.11.0</testng.version>
 		<cucumber.version>7.27.2</cucumber.version>
+		 <!-- Optional Cucumber tag filter -->
+    <cucumber.filter.tags></cucumber.filter.tags>
+   <surefire.suiteXmlFiles>testng.xml</surefire.suiteXmlFiles>
 	</properties>
 
 	<dependencies>
@@ -78,7 +81,33 @@
 			<groupId>com.aventstack</groupId>
 			<artifactId>extentreports</artifactId>
 			<version>5.1.2</version>
+			<scope>test</scope>
 		</dependency>
+		
+    <!-- Core Apache POI library -->
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi</artifactId>
+        <version>5.2.5</version>
+    </dependency>
+    <!-- OXML support required for .xlsx files -->
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>5.2.5</version>
+    </dependency>
+    
+    <dependency>
+    <groupId>com.zaxxer</groupId>
+    <artifactId>HikariCP</artifactId>
+    <version>7.0.2</version>
+</dependency>
+
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>9.4.0</version>
+</dependency>
 
 	</dependencies>
 	<build>
@@ -101,12 +130,21 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.3</version>
 				<configuration>
+				
+				    <!-- TestNG suite -->
 					<suiteXmlFiles>
-						<suiteXmlFile>testng.xml</suiteXmlFile>
+						<suiteXmlFile>${surefire.suiteXmlFiles}</suiteXmlFile>
 					</suiteXmlFiles>
+					
+					
+        <!-- Optional Cucumber tag filtering -->
 					<systemPropertyVariables>
 						<cucumber.filter.tags>${cucumber.filter.tags}</cucumber.filter.tags>
 					</systemPropertyVariables>
+					
+					<!-- Fail if no tests were executed -->
+					     <failIfNoTests>true</failIfNoTests>
+					     
 				</configuration>
 			</plugin>
 

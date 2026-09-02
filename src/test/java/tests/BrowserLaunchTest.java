@@ -2,6 +2,8 @@ package tests;
 
 import config.ConfigReader;
 import driver.DriverManager;
+import tests.abstractClasses.BaseTest;
+
 import org.testng.annotations.Test;
 
 //Our previous version had driver lifecycle code inside it.

@@ -4,7 +4,7 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//Without our manager, we'd end up doing: - supposed to pass driver object everywhere.
+//Without our manager -We are supposed to pass driver object everywhere. hard maintenance.
 //public void login(WebDriver driver) {
 //...
 //}

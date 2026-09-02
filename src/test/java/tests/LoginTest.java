@@ -7,7 +7,9 @@ import org.testng.asserts.SoftAssert;
 import config.ConfigReader;
 import driver.DriverManager;
 import listerners.RetryAnalyzer;
+import pages.DashboardPage;
 import pages.LoginPage;
+import tests.abstractClasses.BaseTest;
 import utils.TestDataReader;
 
 public class LoginTest extends BaseTest {
@@ -28,8 +30,12 @@ public class LoginTest extends BaseTest {
 //                "Admin",
 //                "admin123"
 //        );
-        loginPage.login(TestDataReader.get("valid.username"),
-        		TestDataReader.get("valid.password")); 
+        
+        DashboardPage dashboardPage = loginPage.login(
+                TestDataReader.get("valid.username"),
+                TestDataReader.get("valid.password")
+        );
+       
         
         // version 1
         Assert.assertTrue(
@@ -45,7 +51,14 @@ public class LoginTest extends BaseTest {
         		.contains("/dashboard"), 
         		"User should be redirected to the dashboard after successful login." );
        
-
+        
+        loginPage = dashboardPage.logout();
+        
+        loginPage.getCurrentUrl();
+        
+        Assert.assertTrue(loginPage.getCurrentUrl().endsWith("/auth/login"), 
+        		"Did not back to login screen");
+        
     }
     
     
@@ -53,8 +66,7 @@ public class LoginTest extends BaseTest {
     public void invalidLogin() {
     		
         LoginPage loginPage = new LoginPage();
-        
-
+       
         //DriverManager.getDriver()
         //        .get(ConfigReader.getBaseUrl());
 
@@ -65,8 +77,7 @@ public class LoginTest extends BaseTest {
 //        
       loginPage.login(
       "wrongusername",
-      "admin123"
-);
+      "admin123");
         
       SoftAssert softAssert = new SoftAssert();
       

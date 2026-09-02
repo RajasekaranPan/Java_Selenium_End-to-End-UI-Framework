@@ -1,9 +1,8 @@
-package tests;
+package tests.abstractClasses;
 
 import driver.DriverFactory;
 import driver.DriverManager;
 import listerners.ExtentTestListener;
-import listerners.TestListener;
 
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterMethod;
@@ -25,13 +24,14 @@ import org.slf4j.LoggerFactory;
 //├── Create WebDriver
 //└── Quit WebDriver
 
-@Listeners({TestListener.class,
+@Listeners({
+	//TestListener.class,
 	ExtentTestListener.class})
 public abstract class BaseTest {
 
 	private static final Logger logger =
 	        LoggerFactory.getLogger(BaseTest.class);
-	        		
+	 
     @BeforeMethod
     public void setUp() {
 
