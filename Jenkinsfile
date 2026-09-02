@@ -80,6 +80,11 @@ pipeline {
 		Purpose: Execute Selenium automation scripts remotely in Jenkins
 		============================================================
 		'''
+		 bat 'docker compose up -d'
+
+        echo 'Selenium Grid containers started successfully.'
+
+        bat 'docker ps'
 		    }
 		}
 
