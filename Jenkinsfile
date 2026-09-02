@@ -71,6 +71,18 @@ pipeline {
     }
 
     stages {
+		stage('Start Selenium Grid') {
+		    steps {
+		        echo '''
+		============================================================
+		STARTING DOCKER - SELENIUM GRID
+		Selenium Grid Host: http://localhost:4444/
+		Purpose: Execute Selenium automation scripts remotely in Jenkins
+		============================================================
+		'''
+		        sh 'docker compose up -d'
+		    }
+		}
 
         stage('Environment Check') {
 
