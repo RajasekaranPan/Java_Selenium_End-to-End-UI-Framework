@@ -50,7 +50,6 @@ public class LoginPage extends BasePage {
 
         ElementActions.click(loginButton);
         WaitUtils.waitForPageToLoad();
-        WaitUtils.waitForUrlContains("/dashboard");
         return new DashboardPage();
     }
 

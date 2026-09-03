@@ -8,43 +8,67 @@ import utils.ScreenshotUtils;
 
 public class ExtentTestListener implements ITestListener {
 
-	private static final ThreadLocal<ExtentTest> TEST = new ThreadLocal<>();
+    private static final ThreadLocal<ExtentTest> TEST = new ThreadLocal<>();
 
-	@Override
-	public void onTestStart(ITestResult result) {
+    @Override
+    public void onTestStart(ITestResult result) {
 
-		ExtentTest test = ExtentReportManager
-				.getExtentReports()
-				.createTest(result.getMethod().getMethodName());
+        ExtentTest test = ExtentReportManager
+                .getExtentReports()
+                .createTest(result.getMethod().getMethodName());
 
-		TEST.set(test);
-	}
+        TEST.set(test);
+    }
 
-	@Override
-	public void onTestSuccess(ITestResult result) {
+    public static ExtentTest getTest() {
+        return TEST.get();
+    }
 
-		TEST.get().pass("Test passed");
-	}
+    @Override
+    public void onTestSuccess(ITestResult result) {
 
-	@Override
-	public void onTestFailure(ITestResult result) {
+        ExtentTest test = TEST.get();
 
-		String screenshotPath = ScreenshotUtils.captureScreenshot(result.getMethod().getMethodName());
+        if (test != null) {
+            test.pass("Test passed");
+        }
+    }
 
-		TEST.get().fail(result.getThrowable()).addScreenCaptureFromPath(screenshotPath);
-	}
+    @Override
+    public void onTestFailure(ITestResult result) {
 
-	@Override
-	public void onTestSkipped(ITestResult result) {
+        ExtentTest test = TEST.get();
 
-		TEST.get().skip("Test skipped");
-	}
+        if (test != null) {
 
-	@Override
-	public void onFinish(org.testng.ITestContext context) {
+            String screenshotPath =
+                    ScreenshotUtils.captureScreenshot(
+                            result.getMethod().getMethodName()
+                    );
 
-		ExtentReportManager.getExtentReports().flush();
+            test.fail(result.getThrowable());
 
-		TEST.remove();
-	}
+            if (screenshotPath != null) {
+                test.addScreenCaptureFromPath(screenshotPath);
+            }
+        }
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+
+        ExtentTest test = TEST.get();
+
+        if (test != null) {
+            test.skip("Test skipped");
+        }
+    }
+
+    @Override
+    public void onFinish(org.testng.ITestContext context) {
+
+        ExtentReportManager.getExtentReports().flush();
+
+        TEST.remove();
+    }
 }

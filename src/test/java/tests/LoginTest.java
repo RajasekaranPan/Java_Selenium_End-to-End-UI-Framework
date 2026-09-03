@@ -9,12 +9,14 @@ import driver.DriverManager;
 import listerners.RetryAnalyzer;
 import pages.DashboardPage;
 import pages.LoginPage;
+import reporting.ExtentReportManager;
+import reporting.ReportUtils;
 import tests.abstractClasses.BaseTest;
 import utils.TestDataReader;
 
 public class LoginTest extends BaseTest {
-
-    @Test
+	
+	@Test(groups = {"smoke", "regression", "loginFunctionalities"})
     public void validLogin() {
     		
         LoginPage loginPage = new LoginPage();
@@ -24,6 +26,7 @@ public class LoginTest extends BaseTest {
         //DriverManager.getDriver()
         //        .get(ConfigReader.getBaseUrl());
 
+        ReportUtils.step("Navigating to login page");
         loginPage.navigateToBaseUrl();
         
 //        loginPage.login(
@@ -36,7 +39,7 @@ public class LoginTest extends BaseTest {
                 TestDataReader.get("valid.password")
         );
        
-        
+        ReportUtils.step("Validating successful login");
         // version 1
         Assert.assertTrue(
                 DriverManager.getDriver()
@@ -51,15 +54,14 @@ public class LoginTest extends BaseTest {
         		.contains("/dashboard"), 
         		"User should be redirected to the dashboard after successful login." );
        
-        
-        loginPage = dashboardPage.logout();
+		
+		loginPage = dashboardPage.logout();
         
         loginPage.getCurrentUrl();
         
         Assert.assertTrue(loginPage.getCurrentUrl().endsWith("/auth/login"), 
         		"Did not back to login screen");
-        
-    }
+	}
     
     
     @Test(retryAnalyzer = RetryAnalyzer.class)
@@ -70,28 +72,30 @@ public class LoginTest extends BaseTest {
         //DriverManager.getDriver()
         //        .get(ConfigReader.getBaseUrl());
 
+        ReportUtils.step("Navigating to login page");
         loginPage.navigateToBaseUrl();
         
 //        loginPage.login(TestDataReader.get("valid.username"),
 //        		TestDataReader.get("valid.password")); 
 //        
-      loginPage.login(
+      DashboardPage dashboardPage = loginPage.login(
       "wrongusername",
       "admin123");
         
       SoftAssert softAssert = new SoftAssert();
       
+      ReportUtils.step("Validated failure login");
         // version 1 - Intentional Failure
-      softAssert.assertTrue(
-                DriverManager.getDriver()
+      softAssert.assertFalse(
+                dashboardPage
                         .getCurrentUrl()
-                        .contains("/dasboard"),
+                        .contains("/dashboard"),
                 "User should be redirected to the dashboard after successful login."
         );
         
         // version 2
         //Since LoginPage inherits the functionality from BasePage.
-        Assert.assertTrue( loginPage.getCurrentUrl() 
+        Assert.assertFalse(dashboardPage.getCurrentUrl()
         		.contains("/dashboard"), 
         		"User should be redirected to the dashboard after successful login." );
        
